@@ -9,13 +9,13 @@ import {
 import { useMemo, useRef, useState } from "react";
 
 type Tab = "home" | "map" | "record" | "book";
-type Place = { id: number; name: string; area: string; tag: string; desc: string; x: number; y: number };
+type Place = { id: number; name: string; area: string; tag: string; desc: string; x: number; y: number; image: string; credit: string; source: string };
 
 const places: Place[] = [
-  { id: 1, name: "흰여울문화마을", area: "영도", tag: "골목 산책", desc: "바다를 따라 이어지는 작은 골목과 푸른 풍경", x: 48, y: 73 },
-  { id: 2, name: "광안리 해변", area: "수영구", tag: "야경", desc: "광안대교가 가장 가까이 보이는 부산의 밤", x: 70, y: 41 },
-  { id: 3, name: "감천문화마을", area: "사하구", tag: "드로잉", desc: "겹겹이 쌓인 집과 색다른 골목의 리듬", x: 30, y: 47 },
-  { id: 4, name: "해운대 해변", area: "해운대구", tag: "바다", desc: "넓은 수평선과 도시가 만나는 산책길", x: 82, y: 24 },
+  { id: 1, name: "흰여울문화마을", area: "영도", tag: "골목 산책", desc: "바다를 따라 이어지는 작은 골목과 푸른 풍경", x: 48, y: 73, image: "/huinnyeoul.jpg", credit: "Choi2451 · CC0", source: "https://commons.wikimedia.org/wiki/File:Huinnyeoul_culture_village,_Busan_on_October_25th,_2019.jpg" },
+  { id: 2, name: "광안리 해변", area: "수영구", tag: "야경", desc: "광안대교가 가장 가까이 보이는 부산의 밤", x: 70, y: 41, image: "/gwangalli.jpg", credit: "Masterhatch · CC BY-SA 4.0", source: "https://commons.wikimedia.org/wiki/File:Gwangalli_Beach_and_Gwangan_Bridge_Busan.jpg" },
+  { id: 3, name: "감천문화마을", area: "사하구", tag: "드로잉", desc: "겹겹이 쌓인 집과 색다른 골목의 리듬", x: 30, y: 47, image: "/gamcheon.jpg", credit: "Bernard Gagnon · CC0", source: "https://commons.wikimedia.org/wiki/File:Gamcheon_Culture_Village.jpg" },
+  { id: 4, name: "해운대 해변", area: "해운대구", tag: "바다", desc: "넓은 수평선과 도시가 만나는 산책길", x: 82, y: 24, image: "/haeundae.jpg", credit: "螺钉 · CC BY-SA 3.0", source: "https://commons.wikimedia.org/wiki/File:Haeundae_Beach,_Busan,_S_Korea.jpg" },
 ];
 
 const copy = {
@@ -99,13 +99,14 @@ function HomeView({ t, onPlace, onTab, onMission }: any) {
     </button>
     <section className="section"><div className="section-head"><div><span>01</span><h2>{t.rec}</h2></div><button onClick={() => onTab("map")}>모두 보기 <ArrowRight/></button></div>
       <div className="feature-card" onClick={() => onPlace(places[1])} role="button" tabIndex={0}>
-        <div className="sea-art"><div className="moon"/><div className="bridge"><i/><i/><i/><i/><i/></div><div className="wave w1"/><div className="wave w2"/></div>
+        <div className="sea-art photo-scene" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.2),rgba(0,57,145,.38)),url(${places[1].image})`}}><div className="moon"/><div className="bridge"><i/><i/><i/><i/><i/></div><div className="wave w1"/><div className="wave w2"/></div>
         <div className="feature-copy"><div><span>오늘, 빛이 머무는 곳</span><h3>광안리 해변</h3><p>해 질 무렵 바다의 온도를<br/>한 장면으로 기록해보세요.</p></div><button aria-label="장소 보기"><ArrowRight/></button></div>
       </div>
     </section>
     <section className="section"><div className="section-head"><div><span>02</span><h2>{t.nearby}</h2></div><button onClick={() => onTab("map")}>지도에서 보기 <Map/></button></div>
-      <div className="place-list">{places.slice(0,3).map((p,i)=><button className="place-row" key={p.id} onClick={()=>onPlace(p)}><SceneArt kind={i === 0 ? "village" : i === 1 ? "beach" : "alley"} compact/><div><span>{p.area} · {p.tag}</span><h3>{p.name}</h3><p>{p.desc}</p></div><ChevronRight/></button>)}</div>
+      <div className="place-list">{places.slice(0,3).map((p)=><button className="place-row" key={p.id} onClick={()=>onPlace(p)}><div className="place-photo" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.2),rgba(0,57,145,.35)),url(${p.image})`}}/><div><span>{p.area} · {p.tag}</span><h3>{p.name}</h3><p>{p.desc}</p></div><ChevronRight/></button>)}</div>
     </section>
+    <div className="photo-credits"><span>PHOTO CREDITS · WIKIMEDIA COMMONS</span>{places.map(p=><a key={p.id} href={p.source} target="_blank" rel="noreferrer">{p.name} — {p.credit}</a>)}</div>
   </div>;
 }
 
@@ -121,7 +122,7 @@ function MapView({ t, selected, onSelect, onRecord }: any) {
       <span className="map-label busan">BUSAN</span><span className="map-label sea">SEA</span>
       <div className="stamp-count"><Stamp/> <strong>{selected ? "1" : "0"}/4</strong><span>방문 스탬프</span></div>
       {places.map((p)=><button key={p.id} style={{left:`${p.x}%`,top:`${p.y}%`}} className={`pin ${selected?.id===p.id?"active":""}`} onClick={()=>onSelect(p)} aria-label={p.name}><MapPin/><span>{p.name.replace("문화마을","")}</span></button>)}
-      {selected && <div className="map-sheet"><button className="sheet-close" onClick={()=>onSelect(null)}><X/></button><SceneArt kind={selected.id === 1 ? "village" : selected.id === 2 ? "beach" : selected.id === 3 ? "alley" : "lighthouse"}/><div className="map-sheet-copy"><span>{selected.area} · {selected.tag}</span><h3>{selected.name}</h3><p>{selected.desc}</p><button className="primary small" onClick={()=>onRecord(selected)}>이 장소 기록하기 <PenLine/></button></div></div>}
+      {selected && <div className="map-sheet"><button className="sheet-close" onClick={()=>onSelect(null)}><X/></button><div className="map-sheet-photo" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.18),rgba(0,57,145,.38)),url(${selected.image})`}}/><div className="map-sheet-copy"><span>{selected.area} · {selected.tag}</span><h3>{selected.name}</h3><p>{selected.desc}</p><button className="primary small" onClick={()=>onRecord(selected)}>이 장소 기록하기 <PenLine/></button></div></div>}
     </div>
   </div>;
 }
@@ -162,5 +163,5 @@ function SceneArt({ kind, compact = false }: { kind: "village" | "beach" | "alle
     {kind === "camera" && <><i className="camera-body"/><i className="camera-lens"/><i className="camera-top"/><i className="photo-wave pw1"/><i className="photo-wave pw2"/></>}
   </div>;
 }
-function PlaceSheet({ place, onClose, onRecord }: any) { return <div className="overlay" onClick={onClose}><div className="place-sheet" onClick={e=>e.stopPropagation()}><div className="drag"/><button className="sheet-close" onClick={onClose}><X/></button><div className="sheet-hero"><div className="sheet-water"><div/><div/><div/></div><span>{place.area} · {place.tag}</span><h2>{place.name}</h2><p>{place.desc}</p></div><div className="sheet-facts"><span><Compass/><small>추천 시간</small><strong>해 질 무렵</strong></span><span><Camera/><small>기록 포인트</small><strong>바다와 골목</strong></span></div><button className="primary" onClick={onRecord}>이 장소 기록하기 <PenLine/></button></div></div>; }
+function PlaceSheet({ place, onClose, onRecord }: any) { return <div className="overlay" onClick={onClose}><div className="place-sheet" onClick={e=>e.stopPropagation()}><div className="drag"/><button className="sheet-close" onClick={onClose}><X/></button><div className="sheet-photo" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.12),rgba(0,57,145,.34)),url(${place.image})`}}><span>{place.area} · {place.tag}</span><div><h2>{place.name}</h2><p>{place.desc}</p></div></div><div className="sheet-facts"><span><Compass/><small>추천 시간</small><strong>해 질 무렵</strong></span><span><Camera/><small>기록 포인트</small><strong>바다와 골목</strong></span></div><button className="primary" onClick={onRecord}>이 장소 기록하기 <PenLine/></button></div></div>; }
 function StampModal({ onClose }: any) { return <div className="overlay stamp-overlay"><div className="stamp-modal"><button className="sheet-close" onClick={onClose}><X/></button><div className="stamp-burst"><div className="stamp-mark"><Stamp/><span>BUSAN</span></div></div><span className="eyebrow">STAMP COLLECTED</span><h2>첫 번째 장면을<br/>여행책에 담았어요!</h2><p>기록이 저장되고 장소 스탬프가 발급됐어요.</p><button className="primary" onClick={onClose}>여행책 둘러보기 <BookOpen/></button></div></div>; }
