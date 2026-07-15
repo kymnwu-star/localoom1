@@ -6,3 +6,4 @@
 @media(max-width:850px){body{background:white}.app-shell{padding:0;display:block}.desktop-note,.ambient{display:none}.phone{width:100%;min-height:100vh;border-radius:0;box-shadow:none}.view{padding-bottom:35px}.bottom-nav{position:fixed;max-width:430px;margin:auto}.topbar{position:sticky}.content{min-height:calc(100vh - 150px)}}
 @media(min-width:851px){.phone{max-height:920px;overflow-y:auto;scrollbar-width:none}.phone::-webkit-scrollbar{display:none}.bottom-nav{position:sticky;margin-top:-78px}.content{padding-bottom:78px}}
 .upload-zone>.scene-art{padding:0;display:block;backdrop-filter:none}
+.form-card .place-input{font-weight:700;color:var(--ink);border-bottom:1px solid transparent;padding:2px 0;transition:border-color .2s ease}.form-card .place-input:focus{border-bottom-color:rgba(0,87,200,.35)}.form-card .field-edit-icon{color:var(--blue);opacity:.65}
