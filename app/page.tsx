@@ -131,7 +131,7 @@ function RecordView({ t, selected, image, note, setNote, onUpload, onSave }: any
   return <div className="view record-view"><div className="record-title"><p className="eyebrow">TRAVEL NOTE · 01</p><h1>{t.record}</h1><p>완벽한 문장보다, 지금의 느낌에 가까운 기록이면 충분해요.</p></div>
     <button className={`upload-zone ${image?"has-image":""}`} onClick={onUpload} style={image?{backgroundImage:`linear-gradient(rgba(0,57,145,.06),rgba(0,57,145,.06)),url(${image})`}:{}}>{!image && <SceneArt kind="camera"/>}<div><Camera/><strong>{image?"사진을 바꿔볼까요?":"사진 또는 그림 추가"}</strong><span>{image?"눌러서 다시 선택하기":"오늘의 장면을 가장 먼저 담아주세요"}</span></div></button>
     <div className="form-card">
-      <label><MapPin/><span><small>장소</small><strong>{selected?.name || "흰여울문화마을"}</strong></span><ChevronRight/></label>
+      <label><MapPin/><span><small>장소</small><input className="place-input" defaultValue={selected?.name || ""} placeholder="장소 이름을 입력해주세요" aria-label="장소 이름"/></span><PenLine className="field-edit-icon"/></label>
       <label><CalendarDays/><span><small>날짜</small><strong>2026. 07. 15</strong></span><ChevronRight/></label>
       <label><Utensils/><span><small>먹은 음식</small><input placeholder="기억하고 싶은 맛이 있나요?"/></span></label>
       <label><WalletCards/><span><small>가격</small><input placeholder="0" inputMode="numeric"/></span><em>원</em></label>
