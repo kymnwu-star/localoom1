@@ -3,8 +3,9 @@
 import {
   ArrowLeft, ArrowRight, Bell, BookOpen, CalendarDays, Camera, Check,
   ChevronRight, CircleUserRound, Compass, Gift, Heart, Home, Languages,
-  Map, MapPin, Menu, NotebookPen, Palette, PenLine, Search, Share2,
-  Sparkles, Stamp, Utensils, WalletCards, X,
+  KeyRound, LockKeyhole, LogIn, LogOut, Mail, Map, MapPin, Menu, NotebookPen,
+  Palette, PenLine, Search, Share2, Sparkles, Stamp, UserPlus, Utensils,
+  WalletCards, X,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
@@ -29,6 +30,8 @@ export default function HomePage() {
   const [selected, setSelected] = useState<Place | null>(null);
   const [saved, setSaved] = useState(false);
   const [stampOpen, setStampOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
   const [toast, setToast] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [note, setNote] = useState("");
@@ -68,7 +71,7 @@ export default function HomePage() {
         </header>
 
         <div className="content">
-          {tab === "home" && <HomeView t={t} onPlace={openPlace} onTab={navigate} onMission={() => notify("미션을 여행책에 담았어요")}/>} 
+          {tab === "home" && <HomeView t={t} loggedIn={loggedIn} onLogin={() => loggedIn ? (setLoggedIn(false), notify("로그아웃됐어요")) : setLoginOpen(true)} onPlace={openPlace} onTab={navigate} onMission={() => notify("미션을 여행책에 담았어요")}/>} 
           {tab === "map" && <MapView t={t} selected={selected} onSelect={setSelected} onRecord={startRecord}/>} 
           {tab === "record" && <RecordView t={t} selected={selected} image={image} note={note} setNote={setNote} onUpload={() => fileRef.current?.click()} onSave={saveRecord}/>} 
           {tab === "book" && <BookView t={t} saved={saved} image={image} note={note} onShare={() => notify("공유 링크를 준비했어요")} onTab={navigate}/>} 
@@ -85,14 +88,15 @@ export default function HomePage() {
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0])}/>
       {selected && tab !== "map" && tab !== "record" && <PlaceSheet place={selected} onClose={() => setSelected(null)} onRecord={() => startRecord(selected)}/>} 
       {stampOpen && <StampModal onClose={() => setStampOpen(false)}/>} 
+      {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} onSuccess={() => { setLoggedIn(true); setLoginOpen(false); notify("관리자로 로그인됐어요"); }}/>} 
       {toast && <div className="toast"><Check size={16}/>{toast}</div>}
     </main>
   );
 }
 
-function HomeView({ t, onPlace, onTab, onMission }: any) {
+function HomeView({ t, loggedIn, onLogin, onPlace, onTab, onMission }: any) {
   return <div className="view home-view">
-    <div className="hello"><div><p className="eyebrow">BUSAN · DAY 01</p><h1>{t.greeting}</h1><p>{t.sub}</p></div><div className="avatar"><CircleUserRound/></div></div>
+    <div className="hello"><div><p className="eyebrow">BUSAN · DAY 01</p><h1>{t.greeting}</h1><p>{t.sub}</p></div><div className="profile-actions"><div className={`avatar ${loggedIn ? "logged" : ""}`}><CircleUserRound/></div><button className="profile-login" onClick={onLogin}>{loggedIn ? <LogOut/> : <LogIn/>}{loggedIn ? "로그아웃" : "로그인"}</button></div></div>
     <button className="mission-card" onClick={onMission}>
       <div className="mission-icon"><Sparkles/></div><div><span>{t.mission}</span><h2>{t.missionText}</h2></div><ArrowRight className="mission-arrow"/>
       <div className="mission-progress"><i/><i/><i className="empty"/></div>
@@ -165,3 +169,29 @@ function SceneArt({ kind, compact = false }: { kind: "village" | "beach" | "alle
 }
 function PlaceSheet({ place, onClose, onRecord }: any) { return <div className="overlay" onClick={onClose}><div className="place-sheet" onClick={e=>e.stopPropagation()}><div className="drag"/><button className="sheet-close" onClick={onClose}><X/></button><div className="sheet-photo" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.12),rgba(0,57,145,.34)),url(${place.image})`}}><span>{place.area} · {place.tag}</span><div><h2>{place.name}</h2><p>{place.desc}</p></div></div><div className="sheet-facts"><span><Compass/><small>추천 시간</small><strong>해 질 무렵</strong></span><span><Camera/><small>기록 포인트</small><strong>바다와 골목</strong></span></div><button className="primary" onClick={onRecord}>이 장소 기록하기 <PenLine/></button></div></div>; }
 function StampModal({ onClose }: any) { return <div className="overlay stamp-overlay"><div className="stamp-modal"><button className="sheet-close" onClick={onClose}><X/></button><div className="stamp-burst"><div className="stamp-mark"><Stamp/><span>BUSAN</span></div></div><span className="eyebrow">STAMP COLLECTED</span><h2>첫 번째 장면을<br/>여행책에 담았어요!</h2><p>기록이 저장되고 장소 스탬프가 발급됐어요.</p><button className="primary" onClick={onClose}>여행책 둘러보기 <BookOpen/></button></div></div>; }
+function LoginModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault(); setError(""); setLoading(true);
+    try {
+      const res = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+      if (!res.ok) { setError("아이디 또는 비밀번호를 다시 확인해주세요."); return; }
+      onSuccess();
+    } catch { setError("로그인 중 문제가 발생했어요. 다시 시도해주세요."); }
+    finally { setLoading(false); }
+  };
+  return <div className="login-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <form className="login-panel" onSubmit={submit}>
+      <button type="button" className="sheet-close" onClick={onClose} aria-label="로그인 닫기"><X/></button>
+      <div className="login-mark"><LockKeyhole/></div><p className="eyebrow">WELCOME TO LOCALOOM</p><h2>여행을 이어서<br/>기록해볼까요?</h2><p className="login-desc">나만의 부산 여행책을 안전하게 보관해요.</p>
+      <label className="login-field"><span>아이디</span><div><Mail/><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="이메일을 입력해주세요" autoComplete="username" required/></div></label>
+      <label className="login-field"><span>비밀번호</span><div><KeyRound/><input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="비밀번호를 입력해주세요" autoComplete="current-password" required/></div></label>
+      {error && <p className="login-error">{error}</p>}
+      <button className="primary login-submit" type="submit" disabled={loading}>{loading ? "확인하고 있어요…" : "로그인"}<LogIn/></button>
+      <div className="login-links"><button type="button" onClick={()=>setError("회원가입 기능은 준비 중이에요.")}><UserPlus/>회원가입</button><i/><button type="button" onClick={()=>setError("비밀번호 찾기 기능은 준비 중이에요.")}><KeyRound/>비밀번호 찾기</button></div>
+    </form>
+  </div>;
+}
