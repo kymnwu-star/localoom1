@@ -104,7 +104,7 @@ function HomeView({ t, onPlace, onTab, onMission }: any) {
       </div>
     </section>
     <section className="section"><div className="section-head"><div><span>02</span><h2>{t.nearby}</h2></div><button onClick={() => onTab("map")}>지도에서 보기 <Map/></button></div>
-      <div className="place-list">{places.slice(0,3).map((p,i)=><button className="place-row" key={p.id} onClick={()=>onPlace(p)}><div className={`mini-art art-${i}`}><Compass/></div><div><span>{p.area} · {p.tag}</span><h3>{p.name}</h3><p>{p.desc}</p></div><ChevronRight/></button>)}</div>
+      <div className="place-list">{places.slice(0,3).map((p,i)=><button className="place-row" key={p.id} onClick={()=>onPlace(p)}><SceneArt kind={i === 0 ? "village" : i === 1 ? "beach" : "alley"} compact/><div><span>{p.area} · {p.tag}</span><h3>{p.name}</h3><p>{p.desc}</p></div><ChevronRight/></button>)}</div>
     </section>
   </div>;
 }
@@ -121,7 +121,7 @@ function MapView({ t, selected, onSelect, onRecord }: any) {
       <span className="map-label busan">BUSAN</span><span className="map-label sea">SEA</span>
       <div className="stamp-count"><Stamp/> <strong>{selected ? "1" : "0"}/4</strong><span>방문 스탬프</span></div>
       {places.map((p)=><button key={p.id} style={{left:`${p.x}%`,top:`${p.y}%`}} className={`pin ${selected?.id===p.id?"active":""}`} onClick={()=>onSelect(p)} aria-label={p.name}><MapPin/><span>{p.name.replace("문화마을","")}</span></button>)}
-      {selected && <div className="map-sheet"><button className="sheet-close" onClick={()=>onSelect(null)}><X/></button><div className="map-sheet-art"><MapPin/></div><div className="map-sheet-copy"><span>{selected.area} · {selected.tag}</span><h3>{selected.name}</h3><p>{selected.desc}</p><button className="primary small" onClick={()=>onRecord(selected)}>이 장소 기록하기 <PenLine/></button></div></div>}
+      {selected && <div className="map-sheet"><button className="sheet-close" onClick={()=>onSelect(null)}><X/></button><SceneArt kind={selected.id === 1 ? "village" : selected.id === 2 ? "beach" : selected.id === 3 ? "alley" : "lighthouse"}/><div className="map-sheet-copy"><span>{selected.area} · {selected.tag}</span><h3>{selected.name}</h3><p>{selected.desc}</p><button className="primary small" onClick={()=>onRecord(selected)}>이 장소 기록하기 <PenLine/></button></div></div>}
     </div>
   </div>;
 }
@@ -129,7 +129,7 @@ function MapView({ t, selected, onSelect, onRecord }: any) {
 function RecordView({ t, selected, image, note, setNote, onUpload, onSave }: any) {
   const [color, setColor] = useState(2);
   return <div className="view record-view"><div className="record-title"><p className="eyebrow">TRAVEL NOTE · 01</p><h1>{t.record}</h1><p>완벽한 문장보다, 지금의 느낌에 가까운 기록이면 충분해요.</p></div>
-    <button className={`upload-zone ${image?"has-image":""}`} onClick={onUpload} style={image?{backgroundImage:`linear-gradient(rgba(0,57,145,.06),rgba(0,57,145,.06)),url(${image})`}:{}}><div><Camera/><strong>{image?"사진을 바꿔볼까요?":"사진 또는 그림 추가"}</strong><span>{image?"눌러서 다시 선택하기":"오늘의 장면을 가장 먼저 담아주세요"}</span></div></button>
+    <button className={`upload-zone ${image?"has-image":""}`} onClick={onUpload} style={image?{backgroundImage:`linear-gradient(rgba(0,57,145,.06),rgba(0,57,145,.06)),url(${image})`}:{}}>{!image && <SceneArt kind="camera"/>}<div><Camera/><strong>{image?"사진을 바꿔볼까요?":"사진 또는 그림 추가"}</strong><span>{image?"눌러서 다시 선택하기":"오늘의 장면을 가장 먼저 담아주세요"}</span></div></button>
     <div className="form-card">
       <label><MapPin/><span><small>장소</small><strong>{selected?.name || "흰여울문화마을"}</strong></span><ChevronRight/></label>
       <label><CalendarDays/><span><small>날짜</small><strong>2026. 07. 15</strong></span><ChevronRight/></label>
@@ -152,5 +152,15 @@ function BookView({ t, saved, image, note, onShare, onTab }: any) {
 }
 
 function NavButton({ active, icon, label, onClick }: any) { return <button className={active?"active":""} onClick={onClick}>{icon}<span>{label}</span></button>; }
+function SceneArt({ kind, compact = false }: { kind: "village" | "beach" | "alley" | "lighthouse" | "camera"; compact?: boolean }) {
+  return <div className={`scene-art scene-${kind} ${compact ? "compact" : ""}`} aria-hidden="true">
+    <i className="scene-sun"/><i className="scene-horizon"/>
+    {kind === "village" && <><i className="house h1"/><i className="house h2"/><i className="house h3"/><i className="stair s1"/><i className="stair s2"/></>}
+    {kind === "beach" && <><i className="bridge-line"/><i className="bridge-tower bt1"/><i className="bridge-tower bt2"/><i className="bridge-cable bc1"/><i className="bridge-cable bc2"/></>}
+    {kind === "alley" && <><i className="alley-wall aw1"/><i className="alley-wall aw2"/><i className="alley-path"/><i className="window w-left"/><i className="window w-right"/></>}
+    {kind === "lighthouse" && <><i className="light-beam"/><i className="light-top"/><i className="light-body"/><i className="light-base"/></>}
+    {kind === "camera" && <><i className="camera-body"/><i className="camera-lens"/><i className="camera-top"/><i className="photo-wave pw1"/><i className="photo-wave pw2"/></>}
+  </div>;
+}
 function PlaceSheet({ place, onClose, onRecord }: any) { return <div className="overlay" onClick={onClose}><div className="place-sheet" onClick={e=>e.stopPropagation()}><div className="drag"/><button className="sheet-close" onClick={onClose}><X/></button><div className="sheet-hero"><div className="sheet-water"><div/><div/><div/></div><span>{place.area} · {place.tag}</span><h2>{place.name}</h2><p>{place.desc}</p></div><div className="sheet-facts"><span><Compass/><small>추천 시간</small><strong>해 질 무렵</strong></span><span><Camera/><small>기록 포인트</small><strong>바다와 골목</strong></span></div><button className="primary" onClick={onRecord}>이 장소 기록하기 <PenLine/></button></div></div>; }
 function StampModal({ onClose }: any) { return <div className="overlay stamp-overlay"><div className="stamp-modal"><button className="sheet-close" onClick={onClose}><X/></button><div className="stamp-burst"><div className="stamp-mark"><Stamp/><span>BUSAN</span></div></div><span className="eyebrow">STAMP COLLECTED</span><h2>첫 번째 장면을<br/>여행책에 담았어요!</h2><p>기록이 저장되고 장소 스탬프가 발급됐어요.</p><button className="primary" onClick={onClose}>여행책 둘러보기 <BookOpen/></button></div></div>; }
