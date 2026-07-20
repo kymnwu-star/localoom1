@@ -69,6 +69,7 @@ export default function HomePage() {
             {tab === "home" && <button className="icon-btn" aria-label="메뉴" onClick={() => notify("설정은 곧 만나요")}><Menu size={21}/></button>}
           </div>
         </header>
+        {tab === "home" && <AnimatedSeagull/>}
 
         <div className="content">
           {tab === "home" && <HomeView t={t} loggedIn={loggedIn} onLogin={() => loggedIn ? (setLoggedIn(false), notify("로그아웃됐어요")) : setLoginOpen(true)} onPlace={openPlace} onTab={navigate} onMission={() => notify("미션을 여행책에 담았어요")}/>} 
@@ -103,7 +104,7 @@ function HomeView({ t, loggedIn, onLogin, onPlace, onTab, onMission }: any) {
     </button>
     <section className="section"><div className="section-head"><div><span>01</span><h2>{t.rec}</h2></div><button onClick={() => onTab("map")}>모두 보기 <ArrowRight/></button></div>
       <div className="feature-card" onClick={() => onPlace(places[1])} role="button" tabIndex={0}>
-        <div className="sea-art photo-scene" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.2),rgba(0,57,145,.38)),url(${places[1].image})`}}><AnimatedSeagull/><div className="moon"/><div className="bridge"><i/><i/><i/><i/><i/></div><div className="wave w1"/><div className="wave w2"/></div>
+        <div className="sea-art photo-scene" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.2),rgba(0,57,145,.38)),url(${places[1].image})`}}><div className="moon"/><div className="bridge"><i/><i/><i/><i/><i/></div><div className="wave w1"/><div className="wave w2"/></div>
         <div className="feature-copy"><div><span>오늘, 빛이 머무는 곳</span><h3>광안리 해변</h3><p>해 질 무렵 바다의 온도를<br/>한 장면으로 기록해보세요.</p></div><button aria-label="장소 보기"><ArrowRight/></button></div>
       </div>
     </section>
