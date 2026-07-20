@@ -103,7 +103,7 @@ function HomeView({ t, loggedIn, onLogin, onPlace, onTab, onMission }: any) {
     </button>
     <section className="section"><div className="section-head"><div><span>01</span><h2>{t.rec}</h2></div><button onClick={() => onTab("map")}>모두 보기 <ArrowRight/></button></div>
       <div className="feature-card" onClick={() => onPlace(places[1])} role="button" tabIndex={0}>
-        <div className="sea-art photo-scene" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.2),rgba(0,57,145,.38)),url(${places[1].image})`}}><div className="moon"/><div className="bridge"><i/><i/><i/><i/><i/></div><div className="wave w1"/><div className="wave w2"/></div>
+        <div className="sea-art photo-scene" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.2),rgba(0,57,145,.38)),url(${places[1].image})`}}><AnimatedSeagull/><div className="moon"/><div className="bridge"><i/><i/><i/><i/><i/></div><div className="wave w1"/><div className="wave w2"/></div>
         <div className="feature-copy"><div><span>오늘, 빛이 머무는 곳</span><h3>광안리 해변</h3><p>해 질 무렵 바다의 온도를<br/>한 장면으로 기록해보세요.</p></div><button aria-label="장소 보기"><ArrowRight/></button></div>
       </div>
     </section>
@@ -157,6 +157,9 @@ function BookView({ t, saved, image, note, onShare, onTab }: any) {
 }
 
 function NavButton({ active, icon, label, onClick }: any) { return <button className={active?"active":""} onClick={onClick}>{icon}<span>{label}</span></button>; }
+function AnimatedSeagull() {
+  return <span className="animated-seagull" role="img" aria-label="바다 위를 나는 갈매기"/>;
+}
 function SceneArt({ kind, compact = false }: { kind: "village" | "beach" | "alley" | "lighthouse" | "camera"; compact?: boolean }) {
   return <div className={`scene-art scene-${kind} ${compact ? "compact" : ""}`} aria-hidden="true">
     <i className="scene-sun"/><i className="scene-horizon"/>
