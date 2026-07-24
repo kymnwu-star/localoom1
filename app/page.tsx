@@ -11,6 +11,7 @@ import { useMemo, useRef, useState } from "react";
 
 type Tab = "home" | "map" | "record" | "book";
 type Place = { id: number; name: string; area: string; tag: string; desc: string; x: number; y: number; image: string; credit: string; source: string };
+type SavedRecord = { place: string; date: string; note: string; image: string | null };
 
 const places: Place[] = [
   { id: 1, name: "흰여울문화마을", area: "영도", tag: "골목 산책", desc: "바다를 따라 이어지는 작은 골목과 푸른 풍경", x: 48, y: 73, image: "/huinnyeoul.jpg", credit: "Choi2451 · CC0", source: "https://commons.wikimedia.org/wiki/File:Huinnyeoul_culture_village,_Busan_on_October_25th,_2019.jpg" },
@@ -35,13 +36,18 @@ export default function HomePage() {
   const [toast, setToast] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [note, setNote] = useState("");
+  const [placeName, setPlaceName] = useState("");
+  const [savedRecord, setSavedRecord] = useState<SavedRecord | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const t = copy[lang];
 
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2200); };
   const navigate = (next: Tab) => { setSelected(null); setTab(next); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const openPlace = (place: Place) => setSelected(place);
-  const startRecord = (place?: Place) => { if (place) setSelected(place); setTab("record"); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const startRecord = (place?: Place) => {
+    if (place) { setSelected(place); setPlaceName(place.name); }
+    setTab("record"); window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const upload = (file?: File) => {
     if (!file) return;
@@ -51,6 +57,12 @@ export default function HomePage() {
   };
 
   const saveRecord = () => {
+    setSavedRecord({
+      place: placeName.trim() || selected?.name || "부산의 한 장면",
+      date: new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()),
+      note: note.trim() || "오늘의 부산을 천천히 기억해요.",
+      image,
+    });
     setSaved(true); setStampOpen(true); setTab("book"); setSelected(null);
   };
 
@@ -74,8 +86,8 @@ export default function HomePage() {
         <div className="content">
           {tab === "home" && <HomeView t={t} loggedIn={loggedIn} onLogin={() => loggedIn ? (setLoggedIn(false), notify("로그아웃됐어요")) : setLoginOpen(true)} onPlace={openPlace} onTab={navigate} onMission={() => notify("미션을 여행책에 담았어요")}/>} 
           {tab === "map" && <MapView t={t} selected={selected} onSelect={setSelected} onRecord={startRecord}/>} 
-          {tab === "record" && <RecordView t={t} selected={selected} image={image} note={note} setNote={setNote} onUpload={() => fileRef.current?.click()} onSave={saveRecord}/>} 
-          {tab === "book" && <BookView t={t} saved={saved} image={image} note={note} onShare={() => notify("공유 링크를 준비했어요")} onTab={navigate}/>} 
+          {tab === "record" && <RecordView t={t} image={image} note={note} setNote={setNote} placeName={placeName} setPlaceName={setPlaceName} onUpload={() => fileRef.current?.click()} onSave={saveRecord}/>}
+          {tab === "book" && <BookView t={t} saved={saved} record={savedRecord} onShare={() => notify("공유 링크를 준비했어요")} onTab={navigate}/>}
         </div>
 
         <nav className="bottom-nav" aria-label="주요 메뉴">
@@ -132,13 +144,14 @@ function MapView({ t, selected, onSelect, onRecord }: any) {
   </div>;
 }
 
-function RecordView({ t, selected, image, note, setNote, onUpload, onSave }: any) {
+function RecordView({ t, image, note, setNote, placeName, setPlaceName, onUpload, onSave }: any) {
   const [color, setColor] = useState(2);
+  const today = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
   return <div className="view record-view"><div className="record-title"><p className="eyebrow">TRAVEL NOTE · 01</p><h1>{t.record}</h1><p>완벽한 문장보다, 지금의 느낌에 가까운 기록이면 충분해요.</p></div>
     <button className={`upload-zone ${image?"has-image":""}`} onClick={onUpload} style={image?{backgroundImage:`linear-gradient(rgba(0,57,145,.06),rgba(0,57,145,.06)),url(${image})`}:{}}>{!image && <SceneArt kind="camera"/>}<div><Camera/><strong>{image?"사진을 바꿔볼까요?":"사진 또는 그림 추가"}</strong><span>{image?"눌러서 다시 선택하기":"오늘의 장면을 가장 먼저 담아주세요"}</span></div></button>
     <div className="form-card">
-      <label><MapPin/><span><small>장소</small><input className="place-input" defaultValue={selected?.name || ""} placeholder="장소 이름을 입력해주세요" aria-label="장소 이름"/></span><PenLine className="field-edit-icon"/></label>
-      <label><CalendarDays/><span><small>날짜</small><strong>2026. 07. 15</strong></span><ChevronRight/></label>
+      <label><MapPin/><span><small>장소</small><input className="place-input" value={placeName} onChange={e=>setPlaceName(e.target.value)} placeholder="장소 이름을 입력해주세요" aria-label="장소 이름"/></span><PenLine className="field-edit-icon"/></label>
+      <label><CalendarDays/><span><small>날짜</small><strong>{today}</strong></span><ChevronRight/></label>
       <label><Utensils/><span><small>먹은 음식</small><input placeholder="기억하고 싶은 맛이 있나요?"/></span></label>
       <label><WalletCards/><span><small>가격</small><input placeholder="0" inputMode="numeric"/></span><em>원</em></label>
     </div>
@@ -148,10 +161,24 @@ function RecordView({ t, selected, image, note, setNote, onUpload, onSave }: any
   </div>;
 }
 
-function BookView({ t, saved, image, note, onShare, onTab }: any) {
+function BookView({ t, saved, record, onShare, onTab }: { t: any; saved: boolean; record: SavedRecord | null; onShare: () => void; onTab: (tab: Tab) => void }) {
   return <div className="view book-view"><div className="book-title"><p className="eyebrow">MY TRAVEL ARCHIVE</p><h1>{t.book}</h1><p>모은 장면들이 천천히 한 권의 여행이 됩니다.</p></div>
-    <div className="book-cover"><div className="cover-top"><span>BUSAN · SUMMER 2026</span><span>01 / 04</span></div><div className="cover-visual" style={image?{backgroundImage:`linear-gradient(rgba(0,42,99,.28),rgba(0,42,99,.28)),url(${image})`}:{}}><div className="cover-sun"/><div className="cover-line l1"/><div className="cover-line l2"/><div className="cover-title"><small>A SLOW DAY IN</small><strong>BUSAN</strong><p>{note || "바람이 불 때마다 바다가 더 가까워졌다."}</p></div></div><div className="cover-foot"><span>LOCALOOM TRAVEL DIARY</span><button onClick={onShare}><Share2/> 공유</button></div></div>
+    <div className="book-cover"><div className="cover-top"><span>BUSAN · SUMMER 2026</span><span>{saved ? "01" : "00"} / 04</span></div><div className="cover-visual" style={record?.image?{backgroundImage:`linear-gradient(rgba(0,42,99,.28),rgba(0,42,99,.28)),url(${record.image})`}:{}}><div className="cover-sun"/><div className="cover-line l1"/><div className="cover-line l2"/><div className="cover-title"><small>A SLOW DAY IN</small><strong>BUSAN</strong><p>{record?.note || "바람이 불 때마다 바다가 더 가까워졌다."}</p></div></div><div className="cover-foot"><span>LOCALOOM TRAVEL DIARY</span><button onClick={onShare}><Share2/> 공유</button></div></div>
     <div className="stamp-summary"><div><Stamp/><span><small>나의 여행 스탬프</small><strong>{saved?"1개의 장면을 모았어요":"첫 장면을 기다리고 있어요"}</strong></span></div><div className="stamp-dots">{[0,1,2,3].map(i=><i key={i} className={saved&&i===0?"done":""}>{saved&&i===0?<Check/>:i+1}</i>)}</div></div>
+    {record && <section className="my-records">
+      <div className="my-records-head"><div><span>MY RECORD · 01</span><h2>나의 기록</h2></div><button onClick={()=>onTab("record")}><PenLine/> 기록 더하기</button></div>
+      <article className="travel-record">
+        <div className={`travel-record-photo ${record.image ? "has-image" : ""}`} style={record.image?{backgroundImage:`linear-gradient(rgba(0,42,99,.08),rgba(0,42,99,.26)),url(${record.image})`}:{}}>
+          {!record.image && <SceneArt kind="beach"/>}
+          <span>BUSAN · SCENE 01</span>
+        </div>
+        <div className="travel-record-copy">
+          <div className="record-meta"><span><MapPin/>{record.place}</span><span><CalendarDays/>{record.date}</span></div>
+          <blockquote>“{record.note}”</blockquote>
+          <div className="record-signature"><i/><span>LOCALOOM TRAVEL NOTE</span><Stamp/></div>
+        </div>
+      </article>
+    </section>}
     <div className="result-list"><button><div className="result-icon"><NotebookPen/></div><span><small>기록을 이어서 읽는</small><strong>여행 다이어리</strong><p>{saved?"1개의 기록이 차곡차곡 쌓였어요":"아직 저장된 기록이 없어요"}</p></span><ChevronRight/></button><button><div className="result-icon"><Palette/></div><span><small>오늘의 색으로 만드는</small><strong>디지털 엽서</strong><p>한 장으로 가볍게 공유해보세요</p></span><ChevronRight/></button></div>
     {!saved && <button className="primary empty-cta" onClick={()=>onTab("record")}>첫 기록 남기기 <PenLine/></button>}
   </div>;
