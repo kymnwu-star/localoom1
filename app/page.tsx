@@ -10,8 +10,10 @@ import {
 import { useMemo, useRef, useState } from "react";
 
 type Tab = "home" | "map" | "record" | "book";
+type ArchiveMode = "overview" | "diary" | "postcard";
 type Place = { id: number; name: string; area: string; tag: string; desc: string; x: number; y: number; image: string; credit: string; source: string };
 type SavedRecord = { place: string; date: string; note: string; image: string | null };
+type ExampleRecord = { id: number; place: string; area: string; date: string; title: string; note: string; image: string; color: string };
 
 const places: Place[] = [
   { id: 1, name: "흰여울문화마을", area: "영도", tag: "골목 산책", desc: "바다를 따라 이어지는 작은 골목과 푸른 풍경", x: 48, y: 73, image: "/huinnyeoul.jpg", credit: "Choi2451 · CC0", source: "https://commons.wikimedia.org/wiki/File:Huinnyeoul_culture_village,_Busan_on_October_25th,_2019.jpg" },
@@ -24,6 +26,18 @@ const copy = {
   ko: { greeting: "좋은 오후예요, 여행자님", sub: "오늘은 부산의 어떤 장면을 담아볼까요?", mission: "오늘의 여행 미션", missionText: "파란 풍경 하나를 천천히 바라보고 기록해보세요.", rec: "오늘의 추천", nearby: "지금 가까운 로컬 스폿", map: "부산을 천천히 둘러보세요", record: "오늘의 장면을 남겨보세요", book: "나의 부산 여행책" },
   en: { greeting: "Good afternoon, traveler", sub: "Which scene of Busan will you keep today?", mission: "Today’s little mission", missionText: "Find one blue view, slow down, and capture how it feels.", rec: "Today’s picks", nearby: "Local spots near you", map: "Take your time around Busan", record: "Keep a scene from today", book: "My Busan travel book" },
 };
+
+const diaryExamples: ExampleRecord[] = [
+  { id: 1, place: "흰여울문화마을", area: "영도", date: "2026. 07. 12", title: "바다를 따라 걷는 골목", note: "담장 너머로 파도가 보일 때마다 걸음이 조금씩 느려졌다.", image: "/huinnyeoul.jpg", color: "#1f67c7" },
+  { id: 2, place: "광안리 해변", area: "수영구", date: "2026. 07. 15", title: "빛이 머문 저녁", note: "광안대교에 불이 켜지고, 부산의 밤이 천천히 시작됐다.", image: "/gwangalli.jpg", color: "#164b9b" },
+  { id: 3, place: "감천문화마을", area: "사하구", date: "2026. 07. 18", title: "색으로 이어진 하루", note: "겹겹의 지붕과 골목을 따라 오늘의 색을 하나씩 모았다.", image: "/gamcheon.jpg", color: "#438bd6" },
+];
+
+const postcardExamples: ExampleRecord[] = [
+  { id: 1, place: "해운대 해변", area: "해운대구", date: "2026. 07. 20", title: "FROM HAEUNDAE", note: "넓은 수평선만큼 마음도 가벼워진 오후.", image: "/haeundae.jpg", color: "#176cc2" },
+  { id: 2, place: "광안리 해변", area: "수영구", date: "2026. 07. 21", title: "BLUE NIGHT", note: "부산의 푸른 밤을 한 장 가득 보냅니다.", image: "/gwangalli.jpg", color: "#073f91" },
+  { id: 3, place: "흰여울문화마을", area: "영도", date: "2026. 07. 23", title: "SLOW BUSAN", note: "천천히 걸어서 더 오래 남은 장면.", image: "/huinnyeoul.jpg", color: "#5a91c9" },
+];
 
 export default function HomePage() {
   const [tab, setTab] = useState<Tab>("home");
@@ -162,6 +176,16 @@ function RecordView({ t, image, note, setNote, placeName, setPlaceName, onUpload
 }
 
 function BookView({ t, saved, record, onShare, onTab }: { t: any; saved: boolean; record: SavedRecord | null; onShare: () => void; onTab: (tab: Tab) => void }) {
+  const [mode, setMode] = useState<ArchiveMode>("overview");
+  const changeMode = (next: ArchiveMode) => {
+    setMode(next);
+    window.requestAnimationFrame(() => {
+      document.querySelector(".phone")?.scrollTo({ top: 0 });
+      window.scrollTo({ top: 0 });
+    });
+  };
+  if (mode !== "overview") return <BookArchiveView mode={mode} onBack={()=>changeMode("overview")}/>;
+
   return <div className="view book-view"><div className="book-title"><p className="eyebrow">MY TRAVEL ARCHIVE</p><h1>{t.book}</h1><p>모은 장면들이 천천히 한 권의 여행이 됩니다.</p></div>
     <div className="book-cover"><div className="cover-top"><span>BUSAN · SUMMER 2026</span><span>{saved ? "01" : "00"} / 04</span></div><div className="cover-visual" style={record?.image?{backgroundImage:`linear-gradient(rgba(0,42,99,.28),rgba(0,42,99,.28)),url(${record.image})`}:{}}><div className="cover-sun"/><div className="cover-line l1"/><div className="cover-line l2"/><div className="cover-title"><small>A SLOW DAY IN</small><strong>BUSAN</strong><p>{record?.note || "바람이 불 때마다 바다가 더 가까워졌다."}</p></div></div><div className="cover-foot"><span>LOCALOOM TRAVEL DIARY</span><button onClick={onShare}><Share2/> 공유</button></div></div>
     <div className="stamp-summary"><div><Stamp/><span><small>나의 여행 스탬프</small><strong>{saved?"1개의 장면을 모았어요":"첫 장면을 기다리고 있어요"}</strong></span></div><div className="stamp-dots">{[0,1,2,3].map(i=><i key={i} className={saved&&i===0?"done":""}>{saved&&i===0?<Check/>:i+1}</i>)}</div></div>
@@ -179,8 +203,29 @@ function BookView({ t, saved, record, onShare, onTab }: { t: any; saved: boolean
         </div>
       </article>
     </section>}
-    <div className="result-list"><button><div className="result-icon"><NotebookPen/></div><span><small>기록을 이어서 읽는</small><strong>여행 다이어리</strong><p>{saved?"1개의 기록이 차곡차곡 쌓였어요":"아직 저장된 기록이 없어요"}</p></span><ChevronRight/></button><button><div className="result-icon"><Palette/></div><span><small>오늘의 색으로 만드는</small><strong>디지털 엽서</strong><p>한 장으로 가볍게 공유해보세요</p></span><ChevronRight/></button></div>
+    <div className="result-list"><button onClick={()=>changeMode("diary")} aria-label="여행 다이어리 기록 목록 보기"><div className="result-icon"><NotebookPen/></div><span><small>기록을 이어서 읽는</small><strong>여행 다이어리</strong><p>{saved?"나의 기록과 예시 기록 3개를 읽어보세요":"예시 기록 3개를 먼저 만나보세요"}</p></span><ChevronRight/></button><button onClick={()=>changeMode("postcard")} aria-label="디지털 엽서 기록 목록 보기"><div className="result-icon"><Palette/></div><span><small>오늘의 색으로 만드는</small><strong>디지털 엽서</strong><p>예시 엽서 3장을 한 장씩 펼쳐보세요</p></span><ChevronRight/></button></div>
     {!saved && <button className="primary empty-cta" onClick={()=>onTab("record")}>첫 기록 남기기 <PenLine/></button>}
+  </div>;
+}
+
+function BookArchiveView({ mode, onBack }: { mode: Exclude<ArchiveMode, "overview">; onBack: () => void }) {
+  const isDiary = mode === "diary";
+  const items = isDiary ? diaryExamples : postcardExamples;
+  return <div className={`view archive-view ${isDiary ? "diary-archive" : "postcard-archive"}`}>
+    <button className="archive-back" onClick={onBack}><ArrowLeft/> 여행책으로</button>
+    <div className="archive-title"><p className="eyebrow">{isDiary ? "TRAVEL DIARY · 03" : "DIGITAL POSTCARD · 03"}</p><h1>{isDiary ? "여행 다이어리" : "디지털 엽서"}</h1><p>{isDiary ? "부산에서 천천히 모은 세 개의 장면이에요." : "오늘의 색과 문장을 한 장의 부산으로 만들었어요."}</p></div>
+    <div className={isDiary ? "diary-grid" : "postcard-grid"}>
+      {items.map((item, index)=>isDiary
+        ? <article className="diary-entry" key={item.id}>
+            <div className="diary-entry-photo" style={{backgroundImage:`linear-gradient(rgba(0,42,99,.08),rgba(0,42,99,.35)),url(${item.image})`}}><span>0{index + 1}</span></div>
+            <div className="diary-entry-copy"><div className="archive-meta"><span><MapPin/>{item.area} · {item.place}</span><span>{item.date}</span></div><h2>{item.title}</h2><p>{item.note}</p><div className="diary-line"><i/><NotebookPen/></div></div>
+          </article>
+        : <article className="postcard-entry" key={item.id} style={{"--postcard-color":item.color} as React.CSSProperties}>
+            <div className="postcard-picture" style={{backgroundImage:`linear-gradient(rgba(0,38,91,.13),rgba(0,38,91,.38)),url(${item.image})`}}><span>BUSAN · 0{index + 1}</span><strong>{item.title}</strong></div>
+            <div className="postcard-message"><div><span>TO. MY TRAVEL</span><p>{item.note}</p></div><div className="postcard-stamp"><Stamp/><small>{item.area}<br/>{item.date}</small></div></div>
+          </article>
+      )}
+    </div>
   </div>;
 }
 
