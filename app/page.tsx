@@ -86,11 +86,11 @@ export default function HomePage() {
   return (
     <main className="app-shell">
       <div className="ambient ambient-one" /><div className="ambient ambient-two" />
-      <div className="desktop-note"><h2 className="service-title">Grim Drawer</h2><Image src="/localoom-logo.png" unoptimized alt="Localoom" width="2058" height="286"/><p>지역을 담고,<br/>문화로 잇다.</p><div className="desktop-caption">LOCAL STORIES · SHARED CULTURE</div><BrandConnections/></div>
+      <div className="desktop-note"><h2 className="service-title"><Image src="/grim-drawer-wordmark.svg" alt="Grim Drawer" width="674" height="100"/></h2><Image src="/localoom-logo.png" unoptimized alt="Localoom" width="2058" height="286"/><p>지역을 담고,<br/>문화로 잇다.</p><div className="desktop-caption">LOCAL STORIES · SHARED CULTURE</div><BrandConnections/></div>
       <section className="phone">
         <header className="topbar">
           {tab !== "home" ? <button className="icon-btn" onClick={() => navigate("home")} aria-label="홈으로"><ArrowLeft size={20}/></button> : <button className="icon-btn" aria-label="알림" onClick={() => notify("새로운 알림이 없어요")}><Bell size={20}/><i/></button>}
-          <div className="brand-heading"><strong className="wordmark">{title}</strong>{tab === "home" && <span className="company-signature"><span>by</span><Image src="/localoom-logo.png" unoptimized alt="로컬룸 Localoom" width="2058" height="286"/></span>}</div>
+          <div className="brand-heading"><strong className="wordmark">{tab === "home" ? <Image className="service-wordmark" src="/grim-drawer-wordmark.svg" alt="Grim Drawer" width="674" height="100"/> : title}</strong>{tab === "home" && <span className="company-signature"><span>by</span><Image src="/localoom-logo.png" unoptimized alt="로컬룸 Localoom" width="2058" height="286"/></span>}</div>
           <div className="header-actions">
             <button className="lang-btn" onClick={() => setLang(lang === "ko" ? "en" : "ko")} aria-label="언어 변경"><Languages size={17}/>{lang.toUpperCase()}</button>
             {tab === "home" && <button className="icon-btn" aria-label="메뉴" onClick={() => notify("설정은 곧 만나요")}><Menu size={21}/></button>}

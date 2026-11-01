@@ -56,3 +56,8 @@ body,
 .desktop-note>img{width:230px;height:auto;mix-blend-mode:multiply}
 .cover-wordmark{width:calc(100% - 48px);height:auto;filter:invert(1);mix-blend-mode:screen}
 @media(max-width:360px){.company-signature img{width:120px}}
+
+/* Circular service lettering echoes Localoom; the company artwork stays separate. */
+.brand-heading .wordmark .service-wordmark{width:174px;height:auto;display:block}
+.desktop-note .service-title img{display:block;width:280px;max-width:100%;height:auto}
+@media(max-width:360px){.brand-heading .wordmark .service-wordmark{width:145px}}
