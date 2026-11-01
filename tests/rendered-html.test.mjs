@@ -19,7 +19,7 @@ test('production home renders the brand and all four navigation actions', async 
   const response = await fetch(base);
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.match(html, /LOCALOOM — 부산 로컬 트립 다이어리/);
+  assert.match(html, /Grim Drawer — 로컬룸 여행 다이어리/);
   assert.match(html, /localoom-wordmark.svg/);
   assert.match(html, /주요 메뉴/);
   for (const label of ['홈', '지도', '기록', '여행책']) assert.ok(html.includes(label));

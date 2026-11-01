@@ -81,16 +81,16 @@ export default function HomePage() {
     setSaved(true); setStampOpen(true); setTab("book"); setSelected(null);
   };
 
-  const title = useMemo(() => tab === "map" ? "지도" : tab === "record" ? "기록" : tab === "book" ? "여행책" : "LOCALOOM", [tab]);
+  const title = useMemo(() => tab === "map" ? "지도" : tab === "record" ? "기록" : tab === "book" ? "여행책" : "Grim Drawer", [tab]);
 
   return (
     <main className="app-shell">
       <div className="ambient ambient-one" /><div className="ambient ambient-two" />
-      <div className="desktop-note"><Image src="/localoom-wordmark.svg" alt="Localoom" width="268" height="52"/><p>지역을 담고,<br/>문화로 잇다.</p><div className="desktop-caption">LOCAL STORIES · SHARED CULTURE</div><BrandConnections/></div>
+      <div className="desktop-note"><h2 className="service-title">Grim Drawer</h2><Image src="/localoom-wordmark.svg" alt="Localoom" width="268" height="52"/><p>지역을 담고,<br/>문화로 잇다.</p><div className="desktop-caption">LOCAL STORIES · SHARED CULTURE</div><BrandConnections/></div>
       <section className="phone">
         <header className="topbar">
           {tab !== "home" ? <button className="icon-btn" onClick={() => navigate("home")} aria-label="홈으로"><ArrowLeft size={20}/></button> : <button className="icon-btn" aria-label="알림" onClick={() => notify("새로운 알림이 없어요")}><Bell size={20}/><i/></button>}
-          <strong className="wordmark">{tab === "home" ? <Image src="/localoom-wordmark.svg" alt="Localoom" width="134" height="26"/> : title}</strong>
+          <div className="brand-heading"><strong className="wordmark">{title}</strong>{tab === "home" && <span className="company-signature"><span>by</span><Image src="/localoom-wordmark.svg" alt="로컬룸 Localoom" width="80" height="16"/></span>}</div>
           <div className="header-actions">
             <button className="lang-btn" onClick={() => setLang(lang === "ko" ? "en" : "ko")} aria-label="언어 변경"><Languages size={17}/>{lang.toUpperCase()}</button>
             {tab === "home" && <button className="icon-btn" aria-label="메뉴" onClick={() => notify("설정은 곧 만나요")}><Menu size={21}/></button>}
@@ -188,7 +188,7 @@ function BookView({ t, saved, record, onShare, onTab }: { t: typeof copy.ko; sav
   if (mode !== "overview") return <BookArchiveView mode={mode} onBack={()=>changeMode("overview")}/>;
 
   return <div className="view book-view"><div className="book-title"><p className="eyebrow">MY TRAVEL ARCHIVE</p><h1>{t.book}</h1><p>모은 장면들이 천천히 한 권의 여행이 됩니다.</p></div>
-    <div className="book-cover"><div className="cover-top"><span>BUSAN · SUMMER 2026</span><span>{saved ? "01" : "00"} / 04</span></div><div className="cover-visual" style={record?.image?{backgroundImage:`linear-gradient(rgba(0,42,99,.28),rgba(0,42,99,.28)),url(${record.image})`}:{}}><BrandConnections/><Image className="cover-wordmark" src="/localoom-wordmark.svg" alt="Localoom" width="201" height="39"/><div className="cover-sun"/><div className="cover-line l1"/><div className="cover-line l2"/><div className="cover-title"><small>A SLOW DAY IN</small><strong>BUSAN</strong><p>{record?.note || "바람이 불 때마다 바다가 더 가까워졌다."}</p></div></div><div className="cover-foot"><span>LOCALOOM TRAVEL DIARY</span><button onClick={onShare}><Share2/> 공유</button></div></div>
+    <div className="book-cover"><div className="cover-top"><span>BUSAN · SUMMER 2026</span><span>{saved ? "01" : "00"} / 04</span></div><div className="cover-visual" style={record?.image?{backgroundImage:`linear-gradient(rgba(0,42,99,.28),rgba(0,42,99,.28)),url(${record.image})`}:{}}><BrandConnections/><Image className="cover-wordmark" src="/localoom-wordmark.svg" alt="Localoom" width="201" height="39"/><div className="cover-sun"/><div className="cover-line l1"/><div className="cover-line l2"/><div className="cover-title"><small>A SLOW DAY IN</small><strong>BUSAN</strong><p>{record?.note || "바람이 불 때마다 바다가 더 가까워졌다."}</p></div></div><div className="cover-foot"><span>GRIM DRAWER TRAVEL DIARY</span><button onClick={onShare}><Share2/> 공유</button></div></div>
     <div className="stamp-summary"><div><Stamp/><span><small>나의 여행 스탬프</small><strong>{saved?"1개의 장면을 모았어요":"첫 장면을 기다리고 있어요"}</strong></span></div><div className="stamp-dots">{[0,1,2,3].map(i=><i key={i} className={saved&&i===0?"done":""}>{saved&&i===0?<Check/>:i+1}</i>)}</div></div>
     {record && <section className="my-records">
       <div className="my-records-head"><div className="my-records-title"><span>MY RECORD · 01</span><h2>나의 기록</h2></div><div className="my-records-actions"><button onClick={()=>changeMode("diary")}><BookOpen/> 목록</button><button onClick={()=>onTab("record")}><PenLine/> 기록 더하기</button></div></div>
@@ -200,7 +200,7 @@ function BookView({ t, saved, record, onShare, onTab }: { t: typeof copy.ko; sav
         <div className="travel-record-copy">
           <div className="record-meta"><span><MapPin/>{record.place}</span><span><CalendarDays/>{record.date}</span></div>
           <blockquote>“{record.note}”</blockquote>
-          <div className="record-signature"><i/><span>LOCALOOM TRAVEL NOTE</span><Stamp/></div>
+          <div className="record-signature"><i/><span>GRIM DRAWER TRAVEL NOTE</span><Stamp/></div>
         </div>
       </article>
     </section>}
@@ -263,7 +263,7 @@ function LoginModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
   return <div className="login-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
     <form className="login-panel" onSubmit={submit}>
       <button type="button" className="sheet-close" onClick={onClose} aria-label="로그인 닫기"><X/></button>
-      <div className="login-mark"><LockKeyhole/></div><p className="eyebrow">WELCOME TO LOCALOOM</p><h2>여행을 이어서<br/>기록해볼까요?</h2><p className="login-desc">나만의 부산 여행책을 안전하게 보관해요.</p>
+      <div className="login-mark"><LockKeyhole/></div><p className="eyebrow">WELCOME TO GRIM DRAWER</p><h2>여행을 이어서<br/>기록해볼까요?</h2><p className="login-desc">나만의 부산 여행책을 안전하게 보관해요.</p>
       <label className="login-field"><span>아이디</span><div><Mail/><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="이메일을 입력해주세요" autoComplete="username" required/></div></label>
       <label className="login-field"><span>비밀번호</span><div><KeyRound/><input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="비밀번호를 입력해주세요" autoComplete="current-password" required/></div></label>
       {error && <p className="login-error">{error}</p>}
