@@ -50,3 +50,9 @@ body,
 .desktop-note .service-title{font-size:36px;font-weight:400;letter-spacing:-.045em;margin:0 0 14px;color:var(--charcoal)}
 .desktop-note>img{width:125px;height:auto}
 @media(max-width:360px){.brand-heading .wordmark{font-size:17px}.topbar{padding-left:14px;padding-right:14px}}
+
+/* User-supplied bilingual company artwork, preserving the original proportions. */
+.company-signature img{width:144px;height:auto;mix-blend-mode:multiply}
+.desktop-note>img{width:230px;height:auto;mix-blend-mode:multiply}
+.cover-wordmark{width:calc(100% - 48px);height:auto;filter:invert(1);mix-blend-mode:screen}
+@media(max-width:360px){.company-signature img{width:120px}}
