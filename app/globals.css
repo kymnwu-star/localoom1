@@ -20,3 +20,24 @@ html,body{background:var(--ivory)}body{background-image:none}.app-shell{padding:
 @media(min-width:851px){.phone{margin-left:130px}.bottom-nav{position:sticky;bottom:-90px}.desktop-note{max-width:250px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 @media(min-width:851px){.phone{height:calc(100dvh - 64px);max-height:1000px;min-height:0;padding-bottom:0;display:flex;flex-direction:column;overflow:hidden}.topbar{flex-shrink:0}.content{min-height:0;overflow-y:auto;flex:1;padding-bottom:24px;scrollbar-width:thin}.bottom-nav{position:relative;bottom:auto;margin:0;flex-shrink:0}.animated-seagull{display:none}}
+
+/* Tintoretto-inspired paper relief, using only translucent white over existing ivory. */
+body,
+.phone,
+.topbar,
+.bottom-nav,
+.book-cover,
+.coast,
+.map-sheet,
+.stamp-count,
+.travel-record,
+.diary-entry,
+.postcard-entry,
+.login-panel,
+.stamp-modal,
+.place-sheet {
+  background-image: url('/paper-grain.svg');
+  background-size: 256px 256px;
+  background-repeat: repeat;
+  background-blend-mode: normal;
+}
