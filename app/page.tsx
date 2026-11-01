@@ -2,11 +2,12 @@
 
 import {
   ArrowLeft, ArrowRight, Bell, BookOpen, CalendarDays, Camera, Check,
-  ChevronRight, CircleUserRound, Compass, Gift, Heart, Home, Languages,
+  ChevronRight, CircleUserRound, Compass, Heart, Home, Languages,
   KeyRound, LockKeyhole, LogIn, LogOut, Mail, Map, MapPin, Menu, NotebookPen,
   Palette, PenLine, Search, Share2, Sparkles, Stamp, UserPlus, Utensils,
   WalletCards, X,
 } from "lucide-react";
+import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 
 type Tab = "home" | "map" | "record" | "book";
@@ -56,11 +57,11 @@ export default function HomePage() {
   const t = copy[lang];
 
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2200); };
-  const navigate = (next: Tab) => { setSelected(null); setTab(next); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const navigate = (next: Tab) => { setSelected(null); setTab(next); document.querySelector(".content")?.scrollTo({ top: 0 }); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const openPlace = (place: Place) => setSelected(place);
   const startRecord = (place?: Place) => {
     if (place) { setSelected(place); setPlaceName(place.name); }
-    setTab("record"); window.scrollTo({ top: 0, behavior: "smooth" });
+    setTab("record"); document.querySelector(".content")?.scrollTo({ top: 0 }); window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const upload = (file?: File) => {
@@ -85,11 +86,11 @@ export default function HomePage() {
   return (
     <main className="app-shell">
       <div className="ambient ambient-one" /><div className="ambient ambient-two" />
-      <div className="desktop-note"><span>LOCALOOM</span><p>부산의 장면을 모아<br/>한 권의 여행으로</p></div>
+      <div className="desktop-note"><Image src="/localoom-wordmark.svg" alt="Localoom" width="268" height="52"/><p>지역을 담고,<br/>문화로 잇다.</p><div className="desktop-caption">LOCAL STORIES · SHARED CULTURE</div><BrandConnections/></div>
       <section className="phone">
         <header className="topbar">
           {tab !== "home" ? <button className="icon-btn" onClick={() => navigate("home")} aria-label="홈으로"><ArrowLeft size={20}/></button> : <button className="icon-btn" aria-label="알림" onClick={() => notify("새로운 알림이 없어요")}><Bell size={20}/><i/></button>}
-          <strong className="wordmark">{title}</strong>
+          <strong className="wordmark">{tab === "home" ? <Image src="/localoom-wordmark.svg" alt="Localoom" width="134" height="26"/> : title}</strong>
           <div className="header-actions">
             <button className="lang-btn" onClick={() => setLang(lang === "ko" ? "en" : "ko")} aria-label="언어 변경"><Languages size={17}/>{lang.toUpperCase()}</button>
             {tab === "home" && <button className="icon-btn" aria-label="메뉴" onClick={() => notify("설정은 곧 만나요")}><Menu size={21}/></button>}
@@ -121,10 +122,10 @@ export default function HomePage() {
   );
 }
 
-function HomeView({ t, loggedIn, onLogin, onPlace, onTab, onMission }: any) {
+function HomeView({ t, loggedIn, onLogin, onPlace, onTab, onMission }: { t: typeof copy.ko; loggedIn: boolean; onLogin: () => void; onPlace: (place: Place) => void; onTab: (tab: Tab) => void; onMission: () => void }) {
   return <div className="view home-view">
-    <div className="hello"><div><p className="eyebrow">BUSAN · DAY 01</p><h1>{t.greeting}</h1><p>{t.sub}</p></div><div className="profile-actions"><div className={`avatar ${loggedIn ? "logged" : ""}`}><CircleUserRound/></div><button className="profile-login" onClick={onLogin}>{loggedIn ? <LogOut/> : <LogIn/>}{loggedIn ? "로그아웃" : "로그인"}</button></div></div>
-    <button className="mission-card" onClick={onMission}>
+    <div className="brand-opening"><span>LOCAL STORIES</span><span>부산에서 이어지는 이야기</span></div><div className="hello"><div><p className="eyebrow">BUSAN · DAY 01</p><h1>{t.greeting}</h1><p>{t.sub}</p></div><div className="profile-actions"><div className={`avatar ${loggedIn ? "logged" : ""}`}><CircleUserRound/></div><button className="profile-login" onClick={onLogin}>{loggedIn ? <LogOut/> : <LogIn/>}{loggedIn ? "로그아웃" : "로그인"}</button></div></div>
+    <BrandConnections/><button className="mission-card" onClick={onMission}>
       <div className="mission-icon"><Sparkles/></div><div><span>{t.mission}</span><h2>{t.missionText}</h2></div><ArrowRight className="mission-arrow"/>
       <div className="mission-progress"><i/><i/><i className="empty"/></div>
     </button>
@@ -141,14 +142,14 @@ function HomeView({ t, loggedIn, onLogin, onPlace, onTab, onMission }: any) {
   </div>;
 }
 
-function MapView({ t, selected, onSelect, onRecord }: any) {
+function MapView({ t, selected, onSelect, onRecord }: { t: typeof copy.ko; selected: Place | null; onSelect: (place: Place | null) => void; onRecord: (place: Place) => void }) {
   const [filter, setFilter] = useState("전체");
   return <div className="view map-view">
     <div className="map-intro"><p className="eyebrow">EXPLORE BUSAN</p><h1>{t.map}</h1></div>
     <div className="searchbox"><Search/><span>장소, 동네를 검색해보세요</span></div>
     <div className="chips">{["전체","바다","골목","드로잉"].map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v}</button>)}</div>
     <div className="map-canvas">
-      <div className="map-grid"/><div className="coast c1"/><div className="coast c2"/>
+      <BrandConnections/><div className="map-grid"/><div className="coast c1"/><div className="coast c2"/>
       <div className="river r1"/><div className="river r2"/>
       <span className="map-label busan">BUSAN</span><span className="map-label sea">SEA</span>
       <div className="stamp-count"><Stamp/> <strong>{selected ? "1" : "0"}/4</strong><span>방문 스탬프</span></div>
@@ -158,7 +159,7 @@ function MapView({ t, selected, onSelect, onRecord }: any) {
   </div>;
 }
 
-function RecordView({ t, image, note, setNote, placeName, setPlaceName, onUpload, onSave }: any) {
+function RecordView({ t, image, note, setNote, placeName, setPlaceName, onUpload, onSave }: { t: typeof copy.ko; image: string | null; note: string; setNote: (value: string) => void; placeName: string; setPlaceName: (value: string) => void; onUpload: () => void; onSave: () => void }) {
   const [color, setColor] = useState(2);
   const today = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
   return <div className="view record-view"><div className="record-title"><p className="eyebrow">TRAVEL NOTE · 01</p><h1>{t.record}</h1><p>완벽한 문장보다, 지금의 느낌에 가까운 기록이면 충분해요.</p></div>
@@ -170,24 +171,24 @@ function RecordView({ t, image, note, setNote, placeName, setPlaceName, onUpload
       <label><WalletCards/><span><small>가격</small><input placeholder="0" inputMode="numeric"/></span><em>원</em></label>
     </div>
     <div className="note-card"><div><Heart/><span><small>한 줄 감상</small><strong>이 장면을 어떻게 기억하고 싶나요?</strong></span></div><textarea value={note} onChange={e=>setNote(e.target.value)} maxLength={80} placeholder="바람이 불 때마다 바다가 더 가까워졌다."/><span className="counter">{note.length}/80</span></div>
-    <div className="color-card"><div><Palette/><span><small>오늘의 색</small><strong>가장 닮은 파랑을 골라주세요</strong></span></div><div className="blue-swatches">{[.18,.32,.5,.7,.9].map((o,i)=><button key={o} onClick={()=>setColor(i)} className={color===i?"selected":""} style={{background:`rgba(0, 76, 181, ${o})`}} aria-label={`파랑 ${i+1}`}>{color===i&&<Check/>}</button>)}</div></div>
+    <div className="color-card"><div><Palette/><span><small>오늘의 색</small><strong>오늘의 장면과 닮은 색을 골라주세요</strong></span></div><div className="blue-swatches">{["#f1e8d9","#3e4967","#282827","#cd6659","#aec5c8"].map((o,i)=><button key={o} onClick={()=>setColor(i)} className={color===i?"selected":""} style={{background:o}} aria-label={["아이보리","네이비","차콜","코랄","세이지"][i]} aria-pressed={color===i}>{color===i&&<Check/>}</button>)}</div></div>
     <button className="primary save-btn" onClick={onSave}>기록 완료하기 <ArrowRight/></button>
   </div>;
 }
 
-function BookView({ t, saved, record, onShare, onTab }: { t: any; saved: boolean; record: SavedRecord | null; onShare: () => void; onTab: (tab: Tab) => void }) {
+function BookView({ t, saved, record, onShare, onTab }: { t: typeof copy.ko; saved: boolean; record: SavedRecord | null; onShare: () => void; onTab: (tab: Tab) => void }) {
   const [mode, setMode] = useState<ArchiveMode>("overview");
   const changeMode = (next: ArchiveMode) => {
     setMode(next);
     window.requestAnimationFrame(() => {
-      document.querySelector(".phone")?.scrollTo({ top: 0 });
+      document.querySelector(".content")?.scrollTo({ top: 0 });
       window.scrollTo({ top: 0 });
     });
   };
   if (mode !== "overview") return <BookArchiveView mode={mode} onBack={()=>changeMode("overview")}/>;
 
   return <div className="view book-view"><div className="book-title"><p className="eyebrow">MY TRAVEL ARCHIVE</p><h1>{t.book}</h1><p>모은 장면들이 천천히 한 권의 여행이 됩니다.</p></div>
-    <div className="book-cover"><div className="cover-top"><span>BUSAN · SUMMER 2026</span><span>{saved ? "01" : "00"} / 04</span></div><div className="cover-visual" style={record?.image?{backgroundImage:`linear-gradient(rgba(0,42,99,.28),rgba(0,42,99,.28)),url(${record.image})`}:{}}><div className="cover-sun"/><div className="cover-line l1"/><div className="cover-line l2"/><div className="cover-title"><small>A SLOW DAY IN</small><strong>BUSAN</strong><p>{record?.note || "바람이 불 때마다 바다가 더 가까워졌다."}</p></div></div><div className="cover-foot"><span>LOCALOOM TRAVEL DIARY</span><button onClick={onShare}><Share2/> 공유</button></div></div>
+    <div className="book-cover"><div className="cover-top"><span>BUSAN · SUMMER 2026</span><span>{saved ? "01" : "00"} / 04</span></div><div className="cover-visual" style={record?.image?{backgroundImage:`linear-gradient(rgba(0,42,99,.28),rgba(0,42,99,.28)),url(${record.image})`}:{}}><BrandConnections/><Image className="cover-wordmark" src="/localoom-wordmark.svg" alt="Localoom" width="201" height="39"/><div className="cover-sun"/><div className="cover-line l1"/><div className="cover-line l2"/><div className="cover-title"><small>A SLOW DAY IN</small><strong>BUSAN</strong><p>{record?.note || "바람이 불 때마다 바다가 더 가까워졌다."}</p></div></div><div className="cover-foot"><span>LOCALOOM TRAVEL DIARY</span><button onClick={onShare}><Share2/> 공유</button></div></div>
     <div className="stamp-summary"><div><Stamp/><span><small>나의 여행 스탬프</small><strong>{saved?"1개의 장면을 모았어요":"첫 장면을 기다리고 있어요"}</strong></span></div><div className="stamp-dots">{[0,1,2,3].map(i=><i key={i} className={saved&&i===0?"done":""}>{saved&&i===0?<Check/>:i+1}</i>)}</div></div>
     {record && <section className="my-records">
       <div className="my-records-head"><div className="my-records-title"><span>MY RECORD · 01</span><h2>나의 기록</h2></div><div className="my-records-actions"><button onClick={()=>changeMode("diary")}><BookOpen/> 목록</button><button onClick={()=>onTab("record")}><PenLine/> 기록 더하기</button></div></div>
@@ -229,7 +230,7 @@ function BookArchiveView({ mode, onBack }: { mode: Exclude<ArchiveMode, "overvie
   </div>;
 }
 
-function NavButton({ active, icon, label, onClick }: any) { return <button className={active?"active":""} onClick={onClick}>{icon}<span>{label}</span></button>; }
+function NavButton({ active, icon, label, onClick }: { active: boolean; icon: React.ReactNode; label: string; onClick: () => void }) { return <button className={active?"active":""} onClick={onClick}>{icon}<span>{label}</span></button>; }
 function AnimatedSeagull() {
   return <span className="animated-seagull" role="img" aria-label="바다 위를 나는 갈매기"/>;
 }
@@ -243,8 +244,8 @@ function SceneArt({ kind, compact = false }: { kind: "village" | "beach" | "alle
     {kind === "camera" && <><i className="camera-body"/><i className="camera-lens"/><i className="camera-top"/><i className="photo-wave pw1"/><i className="photo-wave pw2"/></>}
   </div>;
 }
-function PlaceSheet({ place, onClose, onRecord }: any) { return <div className="overlay" onClick={onClose}><div className="place-sheet" onClick={e=>e.stopPropagation()}><div className="drag"/><button className="sheet-close" onClick={onClose}><X/></button><div className="sheet-photo" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.12),rgba(0,57,145,.34)),url(${place.image})`}}><span>{place.area} · {place.tag}</span><div><h2>{place.name}</h2><p>{place.desc}</p></div></div><div className="sheet-facts"><span><Compass/><small>추천 시간</small><strong>해 질 무렵</strong></span><span><Camera/><small>기록 포인트</small><strong>바다와 골목</strong></span></div><button className="primary" onClick={onRecord}>이 장소 기록하기 <PenLine/></button></div></div>; }
-function StampModal({ onClose }: any) { return <div className="overlay stamp-overlay"><div className="stamp-modal"><button className="sheet-close" onClick={onClose}><X/></button><div className="stamp-burst"><div className="stamp-mark"><Stamp/><span>BUSAN</span></div></div><span className="eyebrow">STAMP COLLECTED</span><h2>첫 번째 장면을<br/>여행책에 담았어요!</h2><p>기록이 저장되고 장소 스탬프가 발급됐어요.</p><button className="primary" onClick={onClose}>여행책 둘러보기 <BookOpen/></button></div></div>; }
+function PlaceSheet({ place, onClose, onRecord }: { place: Place; onClose: () => void; onRecord: () => void }) { return <div className="overlay" onClick={onClose}><div className="place-sheet" onClick={e=>e.stopPropagation()}><div className="drag"/><button className="sheet-close" onClick={onClose}><X/></button><div className="sheet-photo" style={{backgroundImage:`linear-gradient(rgba(0,57,145,.12),rgba(0,57,145,.34)),url(${place.image})`}}><span>{place.area} · {place.tag}</span><div><h2>{place.name}</h2><p>{place.desc}</p></div></div><div className="sheet-facts"><span><Compass/><small>추천 시간</small><strong>해 질 무렵</strong></span><span><Camera/><small>기록 포인트</small><strong>바다와 골목</strong></span></div><button className="primary" onClick={onRecord}>이 장소 기록하기 <PenLine/></button></div></div>; }
+function StampModal({ onClose }: { onClose: () => void }) { return <div className="overlay stamp-overlay"><div className="stamp-modal"><button className="sheet-close" onClick={onClose}><X/></button><div className="stamp-burst"><div className="stamp-mark"><Stamp/><span>BUSAN</span></div></div><span className="eyebrow">STAMP COLLECTED</span><h2>첫 번째 장면을<br/>여행책에 담았어요!</h2><p>기록이 저장되고 장소 스탬프가 발급됐어요.</p><button className="primary" onClick={onClose}>여행책 둘러보기 <BookOpen/></button></div></div>; }
 function LoginModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -270,4 +271,8 @@ function LoginModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
       <div className="login-links"><button type="button" onClick={()=>setError("회원가입 기능은 준비 중이에요.")}><UserPlus/>회원가입</button><i/><button type="button" onClick={()=>setError("비밀번호 찾기 기능은 준비 중이에요.")}><KeyRound/>비밀번호 찾기</button></div>
     </form>
   </div>;
+}
+
+function BrandConnections() {
+  return <svg className="brand-connections" viewBox="0 0 360 160" fill="none" aria-hidden="true"><path d="M12 140V18L335 126L250 150" stroke="currentColor" strokeWidth=".65"/><ellipse cx="220" cy="77" rx="61" ry="54" stroke="currentColor" strokeWidth=".65"/><circle cx="12" cy="18" r="3" fill="currentColor"/><circle cx="335" cy="126" r="3" fill="currentColor"/><text x="22" y="16" fill="currentColor" fontSize="8" letterSpacing="1.2">LOCAL STORIES</text><text x="236" y="146" fill="currentColor" fontSize="8" letterSpacing="1">SHARED CULTURE</text></svg>;
 }
