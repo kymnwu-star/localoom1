@@ -1,42 +1,87 @@
-import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { before, after, test } from 'node:test';
-import { setTimeout } from 'node:timers/promises';
+import assert from "node:assert/strict";
+import { access, readFile, readdir } from "node:fs/promises";
+import test from "node:test";
 
-const base = 'http://127.0.0.1:3107';
-let server;
-before(async () => {
-  server = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '--port', '3107'], { stdio: 'pipe' });
-  for (let i = 0; i < 100; i++) {
-    try { if ((await fetch(base)).ok) return; } catch {}
-    await setTimeout(100);
-  }
-  throw new Error('Production server did not become ready');
-});
-after(() => server?.kill());
+const developmentPreviewMeta =
+  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
+const templateRoot = new URL("../", import.meta.url);
+const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
 
-test('production home renders the brand and all four navigation actions', async () => {
-  const response = await fetch(base);
+async function render() {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+
+  return worker.fetch(
+    new Request("http://localhost/", {
+      headers: { accept: "text/html" },
+    }),
+    {
+      ASSETS: {
+        fetch: async () => new Response("Not found", { status: 404 }),
+      },
+    },
+    {
+      waitUntil() {},
+      passThroughOnException() {},
+    },
+  );
+}
+
+test("server-renders the starter loading skeleton", async () => {
+  const response = await render();
   assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+
   const html = await response.text();
-  assert.match(html, /Grim Drawer — 로컬룸 여행 다이어리/);
-  assert.match(html, /localoom-logo.png/);
-  assert.match(html, /주요 메뉴/);
-  for (const label of ['홈', '지도', '기록', '여행책']) assert.ok(html.includes(label));
-  assert.doesNotMatch(html, /Codex is working|Your site is taking shape/);
+  assert.match(html, developmentPreviewMeta);
+  assert.match(html, /<title>Your site is taking shape<\/title>/i);
+  assert.match(html, /Codex is working/);
+  assert.match(html, /Your site is taking shape/);
+  assert.match(html, /Codex is building the first version/);
+  assert.match(html, /react-loading-skeleton/);
+  assert.match(html, /role="status"/);
 });
-test('wordmark and existing place photos remain available', async () => {
-  for (const path of ['/localoom-logo.png', '/huinnyeoul.jpg', '/gwangalli.jpg', '/gamcheon.jpg', '/haeundae.jpg']) {
-    const response = await fetch(base + path);
-    assert.equal(response.status, 200, path);
-    assert.match(response.headers.get('content-type'), /^image\//);
-    assert.ok((await response.arrayBuffer()).byteLength > 100);
-  }
-});
-test('login continues to reject invalid credentials and malformed requests', async () => {
-  const response = await fetch(base + '/api/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email:'invalid@example.com', password:'invalid' }) });
-  assert.equal(response.status, 401);
-  assert.deepEqual(await response.json(), {ok:false});
-  const malformed = await fetch(base + '/api/login', {method:'POST',body:'invalid-json'});
-  assert.equal(malformed.status, 400);
+
+test("keeps the loading skeleton scoped and disposable", async () => {
+  const [preview, css, page, layout, packageJson, files] = await Promise.all([
+    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
+    readFile(new URL("preview.css", previewRoot), "utf8"),
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+    readdir(previewRoot),
+  ]);
+
+  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
+  assert.match(preview, /from "react-loading-skeleton"/);
+  assert.match(preview, /baseColor="#eceae7"/);
+  assert.match(preview, /highlightColor="#f9f8f6"/);
+  assert.match(preview, /duration=\{2\.8\}/);
+  assert.match(preview, /sites-skeleton-search-placeholder/);
+  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
+
+  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
+  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
+  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
+  assert.match(css, /position:\s*fixed/);
+  assert.match(css, /inset:\s*0/);
+  assert.match(css, /opacity:\s*0\.52/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
+  assert.doesNotMatch(
+    preview,
+    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
+  );
+
+  assert.match(page, /export const metadata:\s*Metadata/);
+  assert.match(page, /"codex-preview": "development"/);
+  assert.match(page, /<SkeletonPreview \/>/);
+  assert.match(layout, /title:\s*"Starter Project"/);
+  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
+  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
+
+  await assert.rejects(
+    access(new URL("public/_sites-preview", templateRoot)),
+  );
 });
